@@ -9,6 +9,9 @@ import SwiftUI
 import HealthKit
 
 struct SummaryView: View {
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var workoutManager: WorkoutManager
+    
     @State private var durationFormatter :
     DateComponentsFormatter = {
        let formatter = DateComponentsFormatter()
@@ -18,54 +21,59 @@ struct SummaryView: View {
     }()
     
     var body: some View {
-        ScrollView(.vertical){
-            VStack(alignment: .leading){
-                SummaryMetricView(
-                    title: "Total Time",
-                    value: durationFormatter.string(from: 30 * 60 + 15) ?? "")
+        if workoutManager.session == nil {
+            ProgressView("Saving Workout")
+                .navigationBarHidden(true)
+        }else{
+            ScrollView(.vertical){
+                VStack(alignment: .leading){
+                    SummaryMetricView(
+                        title: "Total Time",
+                        value: durationFormatter.string(from: 30 * 60 + 15) ?? "")
                     .accentColor(.yellow)
-                SummaryMetricView(
-                    title: "Total Distance",
-                    value: Measurement(
-                        value: 1625.0,
-                        unit: UnitLength.meters)
-                    .formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .road
+                    SummaryMetricView(
+                        title: "Total Distance",
+                        value: Measurement(
+                            value: 1625.0,
+                            unit: UnitLength.meters)
+                        .formatted(
+                            .measurement(
+                                width: .abbreviated,
+                                usage: .road
+                            )
                         )
-                    )
-                ).accentColor(.green)
-                SummaryMetricView(
-                    title: "Total Energy",
-                    value: Measurement(
-                        value: 96,
-                        unit: UnitEnergy.kilocalories
-                    ).formatted(
-                        .measurement(
-                            width: .abbreviated,
-                            usage: .workout
+                    ).accentColor(.green)
+                    SummaryMetricView(
+                        title: "Total Energy",
+                        value: Measurement(
+                            value: 96,
+                            unit: UnitEnergy.kilocalories
+                        ).formatted(
+                            .measurement(
+                                width: .abbreviated,
+                                usage: .workout
+                            )
                         )
-                    )
+                        
+                    ).accentColor(.pink)
+                    SummaryMetricView(
+                        title: "Avg. Heart Rate",
+                        value: 143
+                            .formatted(.number.precision(.fractionLength(0))) + "bpm"
+                    ).accentColor(.red)
+                    Text("Activity Rings")
+                    ActivityRingsView(
+                        healthStore: HKHealthStore()
+                    ).frame(width:50, height: 50)
                     
-                ).accentColor(.pink)
-                SummaryMetricView(
-                    title: "Avg. Heart Rate",
-                    value: 143
-                        .formatted(.number.precision(.fractionLength(0))) + "bpm"
-                ).accentColor(.red)
-                Text("Activity Rings")
-                ActivityRingsView(
-                    healthStore: HKHealthStore()
-                ).frame(width:50, height: 50)
-                
-                Button("Done"){
-                    
-                }
-            }.scenePadding()
+                    Button("Done"){
+                        dismiss()
+                    }
+                }.scenePadding()
+            }
+            .navigationBarTitle("Summary")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationBarTitle("Summary")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

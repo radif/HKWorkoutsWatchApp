@@ -13,7 +13,7 @@ struct SessionPagingView: View{
     enum Tab{
         case controls, metrics, nowPlaying
     }
-    
+    @EnvironmentObject var workoutManager : WorkoutManager
     @State private var selection : Tab = .metrics
     
     var body : some View {
@@ -22,8 +22,21 @@ struct SessionPagingView: View{
             MetricsView().tag(Tab.metrics)
             NowPlayingView().tag(Tab.nowPlaying)
         }
+        .navigationTitle(workoutManager.selectedWorkout?.name ?? "")
+        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(selection == .nowPlaying)
+        .onChange(of: workoutManager.running) { _ in
+            displayMetricsView()
+        }
+    }
+    
+    func displayMetricsView(){
+        withAnimation{
+            selection = .metrics
+        }        
     }
 }
 #Preview {
     SessionPagingView()
+        .environmentObject(WorkoutManager())
 }
